@@ -1,0 +1,20 @@
+<div data-role="page" id="events-index-page">
+  <div data-role="header">
+    <h1>Events</h1>
+  </div>
+
+  <div data-role="content">
+    <div data-role="listview" class="ui-listview">
+      <% for event in @events %>
+      <li>
+        <a href="<%= event_path(event) %>">
+          <%= event.title %>
+          <p><%= event.from_time + ' - ' + event.to_time %></p>
+          <p><%= event.location %></p>
+        </a>
+      </li>
+      <% end %>
+      <%= will_paginate @events, renderer: PaginationHelper::JqueryMobilePaginateLinkRenderer %>
+    </div>
+  </div>
+</div>

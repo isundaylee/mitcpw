@@ -46,3 +46,7 @@ gem 'nokogiri'
 
 # Use debugger
 # gem 'debugger', group: [:development, :test]
+
+gem 'jquery_mobile_rails'
+
+gem 'will_paginate'
