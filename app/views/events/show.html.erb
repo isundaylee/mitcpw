@@ -4,6 +4,7 @@
   </div>
 
   <div data-role="content">
+    <a data-role="button" href="<%= event_path(@event, format: :ics) %>" class="ui-link ui-btn" rel="external" role="button">Download iOS event</a>
     <p><%= @event.from_time %> - <%= @event.to_time %></p>
     <p><%= @event.location %></p>
     <% @event.summary.split("\n").each do |p| %>

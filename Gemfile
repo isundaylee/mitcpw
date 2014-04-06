@@ -50,3 +50,5 @@ gem 'nokogiri'
 gem 'jquery_mobile_rails'
 
 gem 'will_paginate'
+
+gem 'icalendar'
