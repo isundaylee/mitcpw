@@ -14,6 +14,9 @@
         </a>
       </li>
       <% end %>
+      <% if @events.empty? %>
+        <li>No events here :(</li>
+      <% end %>
       <%= will_paginate @events, renderer: PaginationHelper::JqueryMobilePaginateLinkRenderer %>
     </div>
   </div>
