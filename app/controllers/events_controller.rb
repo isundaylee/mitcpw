@@ -31,6 +31,7 @@ class EventsController < ApplicationController
       format.html
       format.ics do
         require 'icalendar'
+        reminder = params[:reminder] || 30
 
         cal = Icalendar::Calendar.new
 
@@ -46,7 +47,7 @@ class EventsController < ApplicationController
           alarm do
             action "DISPLAY"
             summary "Alarm notification"
-            trigger "-P0DT0H30M0S"
+            trigger "-P0DT0H#{reminder}M0S"
           end
         end
 
