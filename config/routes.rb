@@ -1,4 +1,6 @@
 Mitcpw::Application.routes.draw do
+  root 'static_pages#index'
+
   resources :events, only: [:index, :show] do
     collection do
       get 'search'
