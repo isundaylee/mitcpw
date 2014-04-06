@@ -38,8 +38,8 @@ class EventsController < ApplicationController
         event = @event
 
         cal.event do
-          dtstart DateTime.parse(event.from.localtime.to_s)
-          dtend DateTime.parse(event.to.localtime.to_s)
+          dtstart DateTime.parse(event.from.to_s)
+          dtend DateTime.parse(event.to.to_s)
           location event.location
           summary event.title
           description event.summary
