@@ -52,3 +52,10 @@ gem 'jquery_mobile_rails'
 gem 'will_paginate'
 
 gem 'icalendar'
+
+
+# Deployment
+gem 'capistrano', '~> 3.0.1'
+gem 'capistrano-rvm'
+gem 'capistrano-bundler'
+gem 'capistrano-rails', '~> 1.1.0'
