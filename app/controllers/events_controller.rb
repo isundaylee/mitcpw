@@ -1,6 +1,27 @@
 class EventsController < ApplicationController
   def index
-    @events = Event.paginate(page: params[:page])
+    if !params[:search]
+      @events = Event.paginate(page: params[:page])
+    else
+      @filtered = []
+
+      Event.all.each do |e|
+        next unless e.title =~ /#{params[:search][:title]}/i
+        next unless params[:search][:dow].include? e.from.localtime.wday.to_s
+
+        type_match = false
+
+        e.types.each do |t|
+          type_match = true if params[:search][:types].include? t.id.to_s
+        end
+
+        next unless type_match
+
+        @filtered << e
+      end
+
+      @events = @filtered.paginate(page: params[:page])
+    end
   end
 
   def show
@@ -33,5 +54,8 @@ class EventsController < ApplicationController
         @ics = cal.to_ical
       end
     end
+  end
+
+  def search
   end
 end

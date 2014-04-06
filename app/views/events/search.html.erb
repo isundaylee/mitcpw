@@ -1,0 +1,33 @@
+<div data-role="page" id="events-index-page">
+  <div data-role="header">
+    <h1>Search for Events</h1>
+  </div>
+
+  <div data-role="content">
+    <%= form_tag events_path, method: 'get' do %>
+      <%= text_field_tag 'search[title]', '', placeholder: 'Name of event. ' %>
+
+      Types of events
+      <div data-role="fieldcontain">
+        <fieldset data-role="controlgroup">
+          <% Type.all.each do |t| %>
+            <%= check_box_tag "search[types][#{t.id}]", t.id, true, name: 'search[types][]' %>
+            <%= label_tag "search_types_#{t.id}", t.title %>
+          <% end %>
+        </fieldset>
+      </div>
+
+      Day
+      <div data-role="fieldcontain">
+        <fieldset data-role="controlgroup">
+          <% 4.upto(7) do |d| %>
+            <%= check_box_tag "search[dow][#{d % 7}]", d % 7, true, name: 'search[dow][]' %>
+            <%= label_tag "search_dow_#{d % 7}", Date::DAYNAMES[d % 7] %>
+          <% end %>
+        </fieldset>
+      </div>
+
+      <%= submit_tag 'Search' %>
+    <% end %>
+  </div>
+</div>
