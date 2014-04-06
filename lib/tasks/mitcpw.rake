@@ -70,4 +70,52 @@ namespace :mitcpw do
     File.write('/tmp/cpw_events.yml', all_events.to_yaml)
   end
 
+  desc "Importing the events downloaded by mitcpw:download task into the database. "
+  task import: :environment do
+    require 'yaml'
+
+    puts 'Wiping out old data'
+    Type.destroy_all
+    Event.destroy_all
+
+    events = YAML.load_file("/tmp/cpw_events.yml")
+
+    types = []
+    events.each { |x| types += x[:type] }
+
+    types.sort!.uniq!
+
+    puts 'Creating the following types'
+    type_hash = {}
+
+    types.each do |x|
+      puts '  ' + x
+
+      type = Type.new
+      type.title = x
+      type.save
+
+      type_hash[x] = type
+    end
+
+    puts 'Importing the events'
+
+    events.each do |e|
+      print '.'
+
+      event = Event.new
+
+      event.title = e[:title]
+      event.from = e[:from]
+      event.to = e[:to]
+      event.location = e[:location]
+      event.summary = e[:summary]
+
+      e[:type].each { |t| event.types << type_hash[t] }
+
+      event.save
+    end
+
+  end
+
 end
