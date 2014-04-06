@@ -1,13 +1,12 @@
-set :stage, :staging
-
 # Simple Role Syntax
 # ==================
 # Supports bulk-adding hosts to roles, the primary
 # server in each group is considered to be the first
 # unless any hosts have the primary property set.
-role :app, %w{deploy@example.com}
-role :web, %w{deploy@example.com}
-role :db,  %w{deploy@example.com}
+# Don't declare `role :all`, it's a meta role
+# role :app, %w{root@ljh.me}
+# role :web, %w{root@ljh.me}
+# role :db,  %w{root@ljh.me}
 
 # Extended Server Syntax
 # ======================
@@ -15,7 +14,18 @@ role :db,  %w{deploy@example.com}
 # definition into the server list. The second argument
 # something that quacks like a hash can be used to set
 # extended properties on the server.
-server 'example.com', user: 'deploy', roles: %w{web app}, my_property: :my_value
+
+set :rvm_type, :system
+
+set :stage, :production
+
+set :branch, 'master'
+
+server 'ljh.me', user: 'deploy', roles: %w{web app db}
+
+set :deploy_to, '/var/www/mitcpw-staging'
+
+set :rails_env, :production
 
 # you can set custom ssh options
 # it's possible to pass any option but you need to keep in mind that net/ssh understand limited list of options
@@ -38,5 +48,3 @@ server 'example.com', user: 'deploy', roles: %w{web app}, my_property: :my_value
 #     # password: 'please use keys'
 #   }
 # setting per server overrides global ssh_options
-
-# fetch(:default_env).merge!(rails_env: :staging)
