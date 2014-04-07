@@ -22,11 +22,11 @@ module PaginationHelper
 
         case classname
         when 'previous_page'
-          link_attr[:'data-icon'] = 'arrow-l'
+          # link_attr[:'data-icon'] = 'arrow-l'
           div_attr[:class] = 'ui-block-a'
         when 'next_page'
-          link_attr[:'data-icon'] = 'arrow-l'
-          link_attr[:'data-iconpos'] = 'right'
+          # link_attr[:'data-icon'] = 'arrow-l'
+          # link_attr[:'data-iconpos'] = 'right'
           div_attr[:class] = 'ui-block-b'
         end
         tag :div, link(text, page || '#', link_attr), div_attr
