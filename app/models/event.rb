@@ -8,4 +8,8 @@ class Event < ActiveRecord::Base
   def to_time
     to.strftime("%A %l:%M %p")
   end
+
+  def google_calendar_link
+    "http://www.google.com/calendar/render?" + ({action: "TEMPLATE", text: title, dates: "#{from.strftime('%Y%m%dT%H%M%SZ')}/#{to.strftime('%Y%m%dT%H%M%SZ')}", details: summary, location: location}.to_query)
+  end
 end
