@@ -7,6 +7,7 @@
     <a data-role="button" href="<%= event_path(@event, format: :ics, reminder: 30) %>" class="ui-link ui-btn" rel="external" role="button">Download iOS Event<br>30 Minutes Reminder</a>
     <a data-role="button" href="<%= event_path(@event, format: :ics, reminder: 15) %>" class="ui-link ui-btn" rel="external" role="button">Download iOS Event<br>15 Minutes Reminder</a>
     <a data-role="button" href="<%= @event.google_calendar_link %>" class="ui-link ui-btn" rel="external" role="button">Google Calendar Link<br>For Android</a>
+    <a data-role="button" href="<%= @event.mobile_google_calendar_link %>" class="ui-link ui-btn" rel="external" role="button">Mobile Google Calendar<br>For Android</a>
     <p><%= @event.from_time %> - <%= @event.to_time %> (Eastern Daylight Time)</p>
     <p><%= @event.location %></p>
     <p><%= @event.types.map { |t| t.title }.join(" / ") %></p>

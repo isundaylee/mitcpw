@@ -12,4 +12,8 @@ class Event < ActiveRecord::Base
   def google_calendar_link
     "http://www.google.com/calendar/render?" + ({action: "TEMPLATE", text: title, dates: "#{from.utc.strftime('%Y%m%dT%H%M%SZ')}/#{to.utc.strftime('%Y%m%dT%H%M%SZ')}", details: summary, location: location}.to_query)
   end
+
+  def mobile_google_calendar_link
+    "https://www.google.com/calendar/gp#~calendar:" + ({view: 'e', action: "TEMPLATE", text: title, dates: "#{from.utc.strftime('%Y%m%dT%H%M%SZ')}/#{to.utc.strftime('%Y%m%dT%H%M%SZ')}", details: summary, location: location}.to_query)
+  end
 end
