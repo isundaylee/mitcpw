@@ -1,5 +1,6 @@
 class Event < ActiveRecord::Base
   has_and_belongs_to_many :types
+  validates :cpw_id, uniqueness: :true
 
   def from_time
     from.strftime("%A %l:%M %p")

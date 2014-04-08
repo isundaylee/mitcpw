@@ -48,7 +48,8 @@ namespace :mitcpw do
           to: date_end,
           location: location,
           type: type,
-          summary: summary
+          summary: summary,
+          url: event_url
         }
 
         events << event
@@ -79,6 +80,7 @@ namespace :mitcpw do
     Event.destroy_all
 
     events = YAML.load_file("/tmp/cpw_events.yml")
+    events.uniq! { |e| e[:url] }
 
     types = []
     events.each { |x| types += x[:type] }
@@ -110,10 +112,11 @@ namespace :mitcpw do
       event.to = e[:to]
       event.location = e[:location]
       event.summary = e[:summary]
+      event.cpw_id = /-([0-9]*)$/.match(e[:url])[1].to_i
 
       e[:type].each { |t| event.types << type_hash[t] }
 
-      event.save
+      event.save!
     end
 
   end
