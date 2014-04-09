@@ -75,19 +75,56 @@ namespace :mitcpw do
   task import: :environment do
     require 'yaml'
 
+    puts 'Loading YAML'
+
+    datetime_now = DateTime.now
+    puts "Updating at #{datetime_now}"
+
+    events = YAML.load_file("/tmp/cpw_events.yml")
+    events.uniq! { |e| e[:url] }
+
+    puts 'Checking for changed events'
+
+    changed_cpw_ids = []
+    added_cpw_ids = []
+    removed_event_names = []
+
+    events.each do |e|
+      cpw_id = /-([0-9]*)$/.match(e[:url])[1].to_i
+      original = Event.find_by(cpw_id: cpw_id)
+
+      if original
+        if original.title != e[:title] \
+        || original.from != e[:from] \
+        || original.to != e[:to] \
+        || original.location != e[:location] \
+        || original.summary != e[:summary]
+          changed_cpw_ids << cpw_id
+        end
+      else
+        added_cpw_ids << cpw_id
+      end
+    end
+
+    Event.all.each do |e|
+      new_event = events.select { |x| /-([0-9]*)$/.match(x[:url])[1].to_i == e.cpw_id }.first
+
+      if !new_event
+        removed_event_names << e.title
+      end
+    end
+
     puts 'Wiping out old data'
     Type.destroy_all
     Event.destroy_all
 
-    events = YAML.load_file("/tmp/cpw_events.yml")
-    events.uniq! { |e| e[:url] }
+    puts 'Creating the following types'
 
     types = []
     events.each { |x| types += x[:type] }
 
     types.sort!.uniq!
 
-    puts 'Creating the following types'
     type_hash = {}
 
     types.each do |x|
@@ -105,6 +142,8 @@ namespace :mitcpw do
     events.each do |e|
       print '.'
 
+      cpw_id = /-([0-9]*)$/.match(e[:url])[1].to_i
+
       event = Event.new
 
       event.title = e[:title]
@@ -112,12 +151,19 @@ namespace :mitcpw do
       event.to = e[:to]
       event.location = e[:location]
       event.summary = e[:summary]
-      event.cpw_id = /-([0-9]*)$/.match(e[:url])[1].to_i
+      event.cpw_id = cpw_id
 
       e[:type].each { |t| event.types << type_hash[t] }
 
       event.save!
     end
+
+    puts
+    puts 'Following changes have occurred'
+
+    changed_cpw_ids.each { |i| puts "  Event #{i} has changed. " }
+    removed_event_names.each { |i| puts "  Event \"#{i}\" has been removed. " }
+    added_cpw_ids.each { |i| puts "  Event #{i} has been added. " }
 
   end
 
