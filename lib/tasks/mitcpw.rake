@@ -1,74 +1,125 @@
 namespace :mitcpw do
   desc "Download the events from mitcpw.org. "
   task download: :environment do
+    require 'net/http'
+    require 'json'
+    require 'nokogiri'
 
-    def download_page(page)
-      require 'nokogiri'
-      require 'yaml'
+    # Initializations
+    events = []
+    now = Time.now.to_i
 
-      def retrieve(url)
-        require 'fileutils'
-        require 'digest/md5'
-        require 'open-uri'
+    # Fetch the pages from the AJAX entrypoint to speed up
+    uri = URI('http://www.mitcpw.org/views/ajax')
 
-        FileUtils.mkdir_p("/tmp/caches")
+    # Create a persistent HTTP connection
+    http = Net::HTTP.new(uri.host, uri.port)
 
-        digest = Digest::MD5.hexdigest(url)
-        path = "/tmp/caches/#{digest}"
+    def fetch_slots(page, http)
+      # Request the page
+      puts "Requesting page #{page}"
+      request = Net::HTTP::Post.new('/views/ajax')
+      request.set_form_data({"view_name" => "events", "view_display_id" => "page_1", "page" => page - 1})
+      page = http.request(request).body
 
-        return File.read(path) if File.exists?(path)
+      # Parse the JSON response
+      json = JSON.parse(page)
+      insert = json.select { |c| c['command'] == 'insert' }[0]
+      content = insert['data']
 
-        File.write(path, open(url).read)
-        File.read(path)
+      # Break if there are no events
+      return {} if content =~ /There are no events listed/
+
+      # Parse the HTML
+      doc = Nokogiri::HTML(content)
+      root = doc.css('.view-content').first
+      current_slot = nil
+      slots = {}
+      root.children.each do |node|
+        if node.name == 'h3'
+          current_slot = node.css('.date-display-single').first.text
+        elsif node.name == 'div'
+          path = node.css('.main-link-event').first['href']
+          slots[current_slot] ||= []
+          slots[current_slot] << path
+        end
       end
 
-      puts "Downloading page #{page + 1}"
-      url = "http://www.mitcpw.org/schedule/events/2014-04?page=%d" % page
-
-      doc = Nokogiri::HTML(retrieve(url))
-
-      events = []
-
-      doc.css('.main-link-event').each do |e|
-        event_url = "http://www.mitcpw.org" + e['href']
-        event_doc = Nokogiri::HTML(retrieve(event_url))
-
-        title = event_doc.at_css('.node-title').text
-        date_start = event_doc.at_css('.date-display-start')['content']
-        date_end = event_doc.at_css('.date-display-end')['content']
-        location = event_doc.at_css('.field-name-field-event-location .field-item').text rescue ''
-        type = event_doc.css('.field-name-field-event-type .field-item').map { |x| x.text }
-        summary = event_doc.at_css('.field-name-body .field-items').text rescue ''
-
-        puts '  ' + title
-
-        event = {
-          title: title,
-          from: date_start,
-          to: date_end,
-          location: location,
-          type: type,
-          summary: summary,
-          url: event_url
-        }
-
-        events << event
-      end
-
-      events
+      slots
     end
 
-    all_events = []
+    event_paths = []
 
-    current_page = 0
+    total_pages = 0
+    pages = {}
     while true
-      events = download_page(current_page)
-      break unless !events.empty?
-      all_events += events
-      current_page += 1
+      try = fetch_slots(total_pages + 1, http)
+      break if try.empty?
+      total_pages += 1
+      pages[total_pages] = try
+      try.values.each { |v| event_paths += v }
     end
 
-    File.write('/tmp/cpw_events.yml', all_events.to_yaml)
+    1.upto(total_pages - 1) do |p|
+      # Fix the gap between page p and page p + 1 due to display order randomization
+      a = pages[p].values.last
+      b = pages[p + 1].values.first
+
+      ka = pages[p].keys.last
+      kb = pages[p + 1].keys.first
+
+      next unless ka == kb
+
+      comb = (a + b).uniq
+      should_be_size = a.size + b.size
+
+      while comb.size != should_be_size
+        na = fetch_slots(p, http).values.last
+        comb = (comb + na).uniq
+        break if comb.size == should_be_size
+        nb = fetch_slots(p + 1, http).values.first
+        comb = (comb + nb).uniq
+      end
+
+      event_paths += comb
+    end
+
+    event_paths.uniq!
+
+    File.write("/tmp/cpw_events/#{now}.list", event_paths.join("\n"))
+    File.write("/tmp/cpw_events/latest.list", event_paths.join("\n"))
+
+    # Fetch individual events
+    event_paths.each_with_index do |e, i|
+      event_doc = Nokogiri::HTML(http.get(e).body)
+
+      title = event_doc.at_css('.node-title').text
+      date_start = event_doc.at_css('.date-display-start')['content']
+      date_end = event_doc.at_css('.date-display-end')['content']
+      location = event_doc.at_css('.field-name-field-event-location .field-item').text rescue ''
+      type = event_doc.css('.field-name-field-event-type .field-item').map { |x| x.text }
+      summary = event_doc.at_css('.field-name-body .field-items').text rescue ''
+
+      puts "  (%03d/%03d) %s" % [i + 1, event_paths.size, title]
+
+      event = {
+        title: title,
+        from: date_start,
+        to: date_end,
+        location: location,
+        type: type,
+        summary: summary,
+        path: e
+      }
+
+      events << event
+    end
+
+    events.uniq! { |e| e[:path] }
+
+    FileUtils.mkdir_p('/tmp/cpw_events')
+    File.write("/tmp/cpw_events/#{now}.yml", events.to_yaml)
+    File.write("/tmp/cpw_events/latest.yml", events.to_yaml)
   end
 
   desc "Importing the events downloaded by mitcpw:download task into the database. "
@@ -80,8 +131,7 @@ namespace :mitcpw do
     datetime_now = DateTime.now
     puts "Updating at #{datetime_now}"
 
-    events = YAML.load_file("/tmp/cpw_events.yml")
-    events.uniq! { |e| e[:url] }
+    events = YAML.load_file("/tmp/cpw_events/latest.yml")
 
     puts 'Checking for changed events'
 
@@ -90,7 +140,7 @@ namespace :mitcpw do
     removed_event_names = []
 
     events.each do |e|
-      cpw_id = /-([0-9]*)$/.match(e[:url])[1].to_i
+      cpw_id = /-([0-9]*)$/.match(e[:path])[1].to_i
       original = Event.find_by(cpw_id: cpw_id)
 
       if original
@@ -107,7 +157,7 @@ namespace :mitcpw do
     end
 
     Event.all.each do |e|
-      new_event = events.select { |x| /-([0-9]*)$/.match(x[:url])[1].to_i == e.cpw_id }.first
+      new_event = events.select { |x| /-([0-9]*)$/.match(x[:path])[1].to_i == e.cpw_id }.first
 
       if !new_event
         removed_event_names << e.title
@@ -142,7 +192,7 @@ namespace :mitcpw do
     events.each do |e|
       print '.'
 
-      cpw_id = /-([0-9]*)$/.match(e[:url])[1].to_i
+      cpw_id = /-([0-9]*)$/.match(e[:path])[1].to_i
 
       event = Event.new
 
