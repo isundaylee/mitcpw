@@ -86,6 +86,7 @@ namespace :mitcpw do
 
     event_paths.uniq!
 
+    FileUtils.mkdir_p('/tmp/cpw_events')
     File.write("/tmp/cpw_events/#{now}.list", event_paths.join("\n"))
     File.write("/tmp/cpw_events/latest.list", event_paths.join("\n"))
 
@@ -117,7 +118,6 @@ namespace :mitcpw do
 
     events.uniq! { |e| e[:path] }
 
-    FileUtils.mkdir_p('/tmp/cpw_events')
     File.write("/tmp/cpw_events/#{now}.yml", events.to_yaml)
     File.write("/tmp/cpw_events/latest.yml", events.to_yaml)
   end
