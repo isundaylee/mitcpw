@@ -1,6 +1,8 @@
 Mitcpw::Application.routes.draw do
   root 'static_pages#index'
 
+  get 'syncing' => 'static_pages#syncing'
+
   resources :events, only: [:index, :show] do
     collection do
       get 'search'

@@ -125,6 +125,16 @@ namespace :mitcpw do
   desc "Importing the events downloaded by mitcpw:download task into the database. "
   task import: :environment do
     require 'yaml'
+    require 'fileutils'
+
+    # Check locking status
+    lock_file = File.join(Rails.root, 'tmp/syncing.lock')
+    if File.exists?(lock_file)
+      puts 'Anothing syncing already in progress. Exiting.'
+      return
+    else
+      FileUtils.touch(lock_file)
+    end
 
     puts 'Loading YAML'
 
@@ -236,6 +246,9 @@ namespace :mitcpw do
     message = "Events synced at #{datetime_now.to_formatted_s(:long_ordinal)}, #{total_changes} changes detected. "
     puts message
     Changelog.create(message: message, cpw_id: nil, changetime: datetime_now)
+
+   # Unlocking syncing status
+   FileUtils.rm_f(lock_file)
 
   end
 
