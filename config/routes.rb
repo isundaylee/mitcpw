@@ -4,6 +4,7 @@ Mitcpw::Application.routes.draw do
   resources :events, only: [:index, :show] do
     collection do
       get 'search'
+      get 'changelog'
     end
   end
 

@@ -1,0 +1,25 @@
+<div data-role="page" id="events-index-page">
+  <div data-role="header">
+    <h1>Changelog</h1>
+  </div>
+
+  <div data-role="content">
+    <div data-role="listview" class="ui-listview">
+      <% for change in @changes %>
+      <li>
+        <% if change.cpw_id %>
+          <a href="<%= event_path(Event.find_by(cpw_id: change.cpw_id)) %>">
+        <% end %>
+          <%= change.message %>
+          <p><%= change.changetime.to_formatted_s(:long_ordinal) %> (EDT)</p>
+        <% if change.cpw_id %>
+          </a>
+        <% end %>
+      </li>
+      <% end %>
+      <% if @changes.empty? %>
+        <li>No changes here :(</li>
+      <% end %>
+    </div>
+  </div>
+</div>

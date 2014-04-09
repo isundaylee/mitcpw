@@ -211,9 +211,31 @@ namespace :mitcpw do
     puts
     puts 'Following changes have occurred'
 
-    changed_cpw_ids.each { |i| puts "  Event #{i} has changed. " }
-    removed_event_names.each { |i| puts "  Event \"#{i}\" has been removed. " }
-    added_cpw_ids.each { |i| puts "  Event #{i} has been added. " }
+    changed_cpw_ids.each do |i|
+      event_name = Event.find_by(cpw_id: i).title
+      message = "Event \"#{event_name}\" has changed."
+      puts "  " + message
+      Changelog.create(message: message, cpw_id: i, changetime: datetime_now)
+    end
+
+    removed_event_names.each do |i|
+      message = "Event \"#{i}\" has been removed."
+      puts "  " + message
+      Changelog.create(message: message, cpw_id: nil, changetime: datetime_now)
+    end
+
+    added_cpw_ids.each do |i|
+      event_name = Event.find_by(cpw_id: i).title
+      message = "Event \"#{event_name}\" has been added."
+      puts "  " + message
+      Changelog.create(message: message, cpw_id: i, changetime: datetime_now)
+    end
+
+    total_changes = changed_cpw_ids.size + removed_event_names.size + added_cpw_ids.size
+
+    message = "Events synced at #{datetime_now.to_formatted_s(:long_ordinal)}, #{total_changes} changes detected. "
+    puts message
+    Changelog.create(message: message, cpw_id: nil, changetime: datetime_now)
 
   end
 

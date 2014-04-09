@@ -11,13 +11,14 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 20140408223215) do
+ActiveRecord::Schema.define(version: 20140409040259) do
 
   create_table "changelogs", force: true do |t|
-    t.datetime "datetime"
+    t.datetime "changetime"
     t.integer  "cpw_id"
     t.datetime "created_at"
     t.datetime "updated_at"
+    t.string   "message"
   end
 
   create_table "event_type_tables", force: true do |t|

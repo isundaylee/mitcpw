@@ -1,4 +1,8 @@
 class EventsController < ApplicationController
+  def changelog
+    @changes = Changelog.all.reverse
+  end
+
   def index
     if !params[:search]
       @events = Event.paginate(page: params[:page])
