@@ -3,6 +3,14 @@ class EventsController < ApplicationController
     @changes = Changelog.all.reverse
   end
 
+  def ongoing
+    @events = Event.where("\"from\" <= ?", DateTime.now)
+                   .where("\"to\" >= ?", DateTime.now)
+                   .paginate(page: params[:page])
+
+    render 'index'
+  end
+
   def index
     if !params[:search]
       @events = Event.paginate(page: params[:page])

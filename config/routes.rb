@@ -7,6 +7,7 @@ Mitcpw::Application.routes.draw do
     collection do
       get 'search'
       get 'changelog'
+      get 'ongoing'
     end
   end
 
