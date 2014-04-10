@@ -11,6 +11,16 @@ class EventsController < ApplicationController
     render 'index'
   end
 
+  def upcoming
+    interval = params[:interval].to_i
+
+    @events = Event.where("\"from\" >= ?", DateTime.now)
+                   .where("\"from\" <= ?", DateTime.now + interval.minutes)
+                   .paginate(page: params[:page])
+
+    render 'index'
+  end
+
   def index
     if !params[:search]
       @events = Event.paginate(page: params[:page])

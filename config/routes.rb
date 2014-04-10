@@ -8,6 +8,7 @@ Mitcpw::Application.routes.draw do
       get 'search'
       get 'changelog'
       get 'ongoing'
+      get 'upcoming/:interval' => 'events#upcoming', as: 'upcoming'
     end
   end
 

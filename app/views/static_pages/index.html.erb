@@ -8,6 +8,9 @@
       <li><a href="<%= events_path %>">Browse All Events</a></li>
       <li><a href="<%= search_events_path %>">Search Events</a></li>
       <li><a href="<%= ongoing_events_path %>">Ongoing Events</a></li>
+      <li><a href="<%= upcoming_events_path(interval: 60) %>">Starting in 1 Hour</a></li>
+      <li><a href="<%= upcoming_events_path(interval: 194) %>">Starting in 3:14 Hours</a></li>
+      <li><a href="<%= upcoming_events_path(interval: 360) %>">Starting in 6 Hours</a></li>
       <li><a href="<%= changelog_events_path %>">Changelog</a></li>
     </div>
   </div>
