@@ -28,8 +28,10 @@ class EventsController < ApplicationController
       @filtered = []
 
       Event.all.each do |e|
-        next unless e.title =~ /#{params[:search][:title]}/i
-        next unless params[:search][:dow].include? e.from.wday.to_s
+        unless (e.title =~ /#{params[:search][:title]}/i) \
+            || (e.summary =~ /#{params[:search][:title]}/i)
+          next
+        end
 
         type_match = false
 
