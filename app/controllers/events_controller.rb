@@ -29,7 +29,7 @@ class EventsController < ApplicationController
 
       Event.all.each do |e|
         next unless e.title =~ /#{params[:search][:title]}/i
-        next unless params[:search][:dow].include? e.from.localtime.wday.to_s
+        next unless params[:search][:dow].include? e.from.wday.to_s
 
         type_match = false
 
